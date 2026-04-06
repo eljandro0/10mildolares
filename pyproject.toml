@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alpha-fondo-a-monitor"
+version = "0.1.0"
+description = "Pipeline de inversion independiente con benchmark Fondo A"
+requires-python = ">=3.10"
+dependencies = [
+  "pandas>=2.1",
+  "numpy>=1.26",
+  "requests>=2.31",
+  "beautifulsoup4>=4.12",
+  "scipy>=1.11",
+  "streamlit>=1.32",
+  "plotly>=5.18",
+  "python-dateutil>=2.8"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,11 @@
+pandas>=2.1
+numpy>=1.26
+requests>=2.31
+beautifulsoup4>=4.12
+scipy>=1.11
+streamlit>=1.32
+plotly>=5.18
+python-dateutil>=2.8
+
+[dev]
+pytest>=8.0

@@ -1,0 +1,6 @@
+﻿ticker,name,instrument_type,sector,region,quality_score,tradable
+SPY,SPDR S&P 500 ETF,ETF,Technology,US,0.82,true
+QQQ,Invesco QQQ Trust,ETF,Technology,US,0.78,true
+XLE,Energy Select Sector SPDR,ETF,Energy,US,0.61,true
+EEM,iShares MSCI Emerging Markets,ETF,Diversified,EM,0.54,true
+AGG,iShares Core US Aggregate Bond,ETF,FixedIncome,US,0.75,true

@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: alpha-fondo-a-monitor
+Version: 0.1.0
+Summary: Pipeline de inversion independiente con benchmark Fondo A
+Requires-Python: >=3.10
+Requires-Dist: pandas>=2.1
+Requires-Dist: numpy>=1.26
+Requires-Dist: requests>=2.31
+Requires-Dist: beautifulsoup4>=4.12
+Requires-Dist: scipy>=1.11
+Requires-Dist: streamlit>=1.32
+Requires-Dist: plotly>=5.18
+Requires-Dist: python-dateutil>=2.8
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
