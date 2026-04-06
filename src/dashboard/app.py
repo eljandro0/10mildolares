@@ -14,6 +14,7 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parents[2]
 INPUT_POSITIONS = ROOT / "data" / "inputs" / "positions.csv"
 BENCHMARK_ENTRY = ROOT / "data" / "inputs" / "fondo_a_benchmark_entry.json"
+FONDO_A_CACHE = ROOT / "data" / "inputs" / "fondo_a_uno_cache.csv"
 
 
 @st.cache_data(ttl=300, show_spinner=False)
@@ -42,29 +43,38 @@ def fetch_price_history(ticker: str, start: date, end: date) -> pd.DataFrame:
 
 @st.cache_data(ttl=900, show_spinner=False)
 def fetch_fondo_a_uno_series(start_year: int, end_year: int, fecconf: str | None = None) -> pd.DataFrame:
-    conf = fecconf or datetime.now(UTC).strftime("%Y%m%d")
-    url = "https://www.spensiones.cl/apps/valoresCuotaFondo/vcfAFPxls.php"
-    params = {"aaaaini": str(start_year), "aaaafin": str(end_year), "tf": "A", "fecconf": conf}
-    resp = requests.get(url, params=params, timeout=30, headers={"User-Agent": "Mozilla/5.0"})
-    resp.raise_for_status()
-    txt = resp.content.decode("utf-8", errors="ignore")
+    try:
+        conf = fecconf or datetime.now(UTC).strftime("%Y%m%d")
+        url = "https://www.spensiones.cl/apps/valoresCuotaFondo/vcfAFPxls.php"
+        params = {"aaaaini": str(start_year), "aaaafin": str(end_year), "tf": "A", "fecconf": conf}
+        resp = requests.get(url, params=params, timeout=12, headers={"User-Agent": "Mozilla/5.0"})
+        resp.raise_for_status()
+        txt = resp.content.decode("utf-8", errors="ignore")
 
-    rows: list[dict[str, object]] = []
-    for line in txt.splitlines():
-        if not re.match(r"^\d{4}-\d{2}-\d{2};", line):
-            continue
-        parts = line.split(";")
-        if len(parts) < 3:
-            continue
-        d = pd.to_datetime(parts[0].strip(), errors="coerce")
-        v = pd.to_numeric(parts[-2].strip().replace(".", "").replace(",", "."), errors="coerce")
-        if pd.notna(d) and pd.notna(v):
-            rows.append({"date": d.normalize(), "valor_cuota": float(v)})
-
-    out = pd.DataFrame(rows).dropna().sort_values("date").drop_duplicates(subset=["date"], keep="last")
-    if out.empty:
-        raise ValueError("No se pudo obtener serie Fondo A UNO")
-    return out
+        rows: list[dict[str, object]] = []
+        for line in txt.splitlines():
+            if not re.match(r"^\d{4}-\d{2}-\d{2};", line):
+                continue
+            parts = line.split(";")
+            if len(parts) < 3:
+                continue
+            d = pd.to_datetime(parts[0].strip(), errors="coerce")
+            v = pd.to_numeric(parts[-2].strip().replace(".", "").replace(",", "."), errors="coerce")
+            if pd.notna(d) and pd.notna(v):
+                rows.append({"date": d.normalize(), "valor_cuota": float(v)})
+        out = pd.DataFrame(rows).dropna().sort_values("date").drop_duplicates(subset=["date"], keep="last")
+        if out.empty:
+            raise ValueError("Serie Fondo A vacia desde SP")
+        # refresh local cache for fallback/public hosting
+        FONDO_A_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        out.to_csv(FONDO_A_CACHE, index=False)
+        return out
+    except Exception:
+        if FONDO_A_CACHE.exists():
+            cached = pd.read_csv(FONDO_A_CACHE)
+            cached["date"] = pd.to_datetime(cached["date"]).dt.normalize()
+            return cached.sort_values("date").drop_duplicates(subset=["date"], keep="last")
+        raise
 
 
 @st.cache_data(ttl=900, show_spinner=False)
